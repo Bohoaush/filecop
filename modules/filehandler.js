@@ -37,38 +37,52 @@ async function handleFile(parameters) {
                 if (parameters.createdir) {
                     figurePath(parameters.destination);
                 }
-                fs.copyFile(parameters.source, parameters.destination, (err) => {
-                    if (err) {
-                        response.status = "fail";
-                        response.info = err;
-                        logger.log(mdnm, "ERROR", (JSON.stringify(response)));
-                        resolve(response);
-                    } else {
-                        response.status = "success";
-                        response.info = "Copied " + parameters.source + " to " + parameters.destination;
-                        logger.log(mdnm, "INFO", (JSON.stringify(response)));
-                        resolve(response);
-                    }
-                });
+                if (!parameters.overwrite && fs.existsSync(parameters.destination)) {
+                    response.status = "fail";
+                    response.info = "Not overwriting destination file";
+                    logger.log(mdnm, "ERROR", JSON.stringify(response));
+                    resolve(response);
+                } else {
+                    fs.copyFile(parameters.source, parameters.destination, (err) => {
+                        if (err) {
+                            response.status = "fail";
+                            response.info = err;
+                            logger.log(mdnm, "ERROR", (JSON.stringify(response)));
+                            resolve(response);
+                        } else {
+                            response.status = "success";
+                            response.info = "Copied " + parameters.source + " to " + parameters.destination;
+                            logger.log(mdnm, "INFO", (JSON.stringify(response)));
+                            resolve(response);
+                        }
+                    });
+                }
                 break;
 
             case "rename":
                 if (parameters.createdir) {
                     figurePath(parameters.destination);
                 }
-                fs.rename(parameters.source, parameters.destination, (err) => {
-                    if (err) {
-                        response.status = "fail";
-                        response.info = err;
-                        logger.log(mdnm, "ERROR", (JSON.stringify(response)));
-                        resolve(response);
-                    } else {
-                        response.status = "success";
-                        response.info = "Renamed " + parameters.source + " to " + parameters.destination;
-                        logger.log(mdnm, "INFO", (JSON.stringify(response)));
-                        resolve(response);
-                    }
-                });
+                if (!parameters.overwrite && fs.existsSync(parameters.destination)) {
+                    response.status = "fail";
+                    response.info = "Not overwriting destination file";
+                    logger.log(mdnm, "ERROR", JSON.stringify(response));
+                    resolve(response);
+                } else {
+                    fs.rename(parameters.source, parameters.destination, (err) => {
+                        if (err) {
+                            response.status = "fail";
+                            response.info = err;
+                            logger.log(mdnm, "ERROR", (JSON.stringify(response)));
+                            resolve(response);
+                        } else {
+                            response.status = "success";
+                            response.info = "Renamed " + parameters.source + " to " + parameters.destination;
+                            logger.log(mdnm, "INFO", (JSON.stringify(response)));
+                            resolve(response);
+                        }
+                    });
+                }
                 break;
 
             case "delete":

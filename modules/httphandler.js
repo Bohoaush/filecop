@@ -4,15 +4,15 @@ let logger = require("./logger.js");
 let filehandler = require("./filehandler.js");
 
 function httpPost(url, data) {
-    /*try {*/
+    try {
         let httpRequest = http.request(("http://" + url.replace("::ffff:", "")), (res) => {
-            logger.log(mdnm, "INFO", "got response " + res);
+            //logger.log(mdnm, "INFO", "got response " + JSON.stringify(res)); TODO fix
         });
         httpRequest.write(JSON.stringify(data));
         httpRequest.end();
-    /*} catch {
+    } catch {
         logger.log(mdnm, "ERROR", "Failed to send response");
-    }*/
+    }
 }
 
 function testAuth(remoteIP) {
