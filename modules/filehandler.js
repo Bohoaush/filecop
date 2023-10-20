@@ -2,60 +2,105 @@ let mdnm = "filehandler";
 let logger = require("./logger.js");
 let fs = require("fs");
 
+function readSettings() {
+    return new Promise((resolve, reject) => {
+        fs.readFile("./settings.json", function(err, data) {
+            if (err) {
+                logger.log(mdnm, "ERROR", "Unable to read settings"); //TODO generate new settings file
+                reject();
+            }
+            if (data != null) {
+                module.exports.config = JSON.parse(data);
+                logger.log(mdnm, "INFO", "Loaded settings from file");
+                resolve();
+            }
+        });
+    });
+}
+
 function figurePath(path) {
-    let dir = path.match(/.*\//);
+    let dir = path.match(/.*\//)[0];
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, {recursive: true});
         logger.log(mdnm, "INFO", "created directory " + dir);
-        return();
+        return;
     } else {
-        return();
+        return;
     }
 }
 
-function handleFile(parameters) {
-    let response = {id: parameters.id};
-    switch(parameters.action) {
-        case "copy":
-            figurePath(parameters.destination);
-            fs.copyFile(parameters.source, parameters.destination, (err) => {
-                if (err) {
-                    response.status = "fail";
-                    response.info = err;
-                    logger.log(mdnm, "ERROR", (JSON.stringify(response)));
-                    return(response);
-                } else {
-                    response.status = "success";
-                    response.info = "Copied " + parameters.source + " to " + parameters.destination;
-                    logger.log(mdnm, "INFO", (JSON.stringify(response)));
-                    return(response);
+async function handleFile(parameters) {
+    return new Promise((resolve) => {
+        let response = {id: parameters.id};
+        switch(parameters.action) {
+            case "copy":
+                if (parameters.createdir) {
+                    figurePath(parameters.destination);
                 }
-            });
-            break;
+                fs.copyFile(parameters.source, parameters.destination, (err) => {
+                    if (err) {
+                        response.status = "fail";
+                        response.info = err;
+                        logger.log(mdnm, "ERROR", (JSON.stringify(response)));
+                        resolve(response);
+                    } else {
+                        response.status = "success";
+                        response.info = "Copied " + parameters.source + " to " + parameters.destination;
+                        logger.log(mdnm, "INFO", (JSON.stringify(response)));
+                        resolve(response);
+                    }
+                });
+                break;
 
-        case "move":
+            case "rename":
+                if (parameters.createdir) {
+                    figurePath(parameters.destination);
+                }
+                fs.rename(parameters.source, parameters.destination, (err) => {
+                    if (err) {
+                        response.status = "fail";
+                        response.info = err;
+                        logger.log(mdnm, "ERROR", (JSON.stringify(response)));
+                        resolve(response);
+                    } else {
+                        response.status = "success";
+                        response.info = "Renamed " + parameters.source + " to " + parameters.destination;
+                        logger.log(mdnm, "INFO", (JSON.stringify(response)));
+                        resolve(response);
+                    }
+                });
+                break;
 
-            break;
+            case "delete":
+                fs.unlink(parameters.source, (err) => {
+                    if (err) {
+                        response.status = "fail";
+                        response.info = err;
+                        logger.log(mdnm, "ERROR", (JSON.stringify(response)));
+                        resolve(response);
+                    } else {
+                        response.status = "success";
+                        response.info = "Deleted " + parameters.source;
+                        logger.log(mdnm, "INFO", (JSON.stringify(response)));
+                        resolve(response);
+                    }
+                });
+                break;
 
-        case "rename":
-
-            break;
-
-        case "delete":
-
-            break;
-
-        default:
-            response.status = "fail";
-            response.info = "unknown action";
-            logger.log(response)
-            return(response);
-            break;
-    }
+            default:
+                response.status = "fail";
+                response.info = "unknown action";
+                logger.log(response)
+                resolve(response);
+                break;
+        }
+    });
 }
 
 module.exports = {
-    handleFile
+    handleFile,
+    readSettings,
+    config: {}
 }
 
 logger.log(mdnm, "INFO", "File handler loaded");

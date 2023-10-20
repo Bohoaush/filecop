@@ -1,0 +1,9 @@
+{
+"use_src_address":"true",
+"reply_address":"127.0.0.1",
+"reply_endpoint":"/response",
+"allow_requests_from":[
+"127.0.0.1",
+"::ffff:127.0.0.1"
+]
+}
